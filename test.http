@@ -1,0 +1,6 @@
+GET http://localhost:9090/todos
+Content-type: application/json
+
+{
+    "task":"Todo task2"
+}
