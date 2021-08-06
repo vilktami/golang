@@ -8,7 +8,10 @@ import(
 	"log"
 	"fmt"
 	"todo/todo"
+	"gorm.io/gorm"
+	"gorm.io/driver/sqlite"
 	"github.com/gin-gonic/gin"
+	"todo/entities"
 )
 
 func main() {
@@ -18,9 +21,8 @@ func main() {
 	if err!=nil {
 		log.Panic(err)
 	}
-	db.AutoMigrate(&Task{})
-	
-	app := todo.NewApp(db)
+	db.AutoMigrate(&entities.Task{})
+	app := todo.NewTodo(db)
 	r.GET("/auth",func(c *gin.Context) {
 		
 		mySigningKey := []byte("password")
@@ -74,32 +76,6 @@ func authMiddleware(c *gin.Context) {
 
 	c.Next()
 }
-
-// //authMiddleware
-// func authMiddleware(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-// 		mySigningKey := []byte("password")
-// 		tokenString := r.Header.Get("Authorization")
-// 		tokenString = strings.ReplaceAll(tokenString, "Bearer ", "")
-
-// 		_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-// 			// Don't forget to validate the alg is what you expect:
-// 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-// 			}
-
-// 			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-// 			return mySigningKey, nil
-// 		})
-// 		if err != nil {
-// 			rw.WriteHeader(http.StatusUnauthorized)
-// 			return
-// 		}
-
-// 		log.Println(r.RequestURI)
-// 		next.ServeHTTP(rw, r)
-// 	})
-// }
 
 //loggingMiddleware
 func loggingMiddleware(next http.Handler) http.Handler {

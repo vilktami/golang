@@ -10,6 +10,7 @@ type GormInsert struct {
 	db *gorm.DB
 }
 
+
 func (insert GormInsert) Insert(v interface{}) error {
 	return errors.WithMessage(insert.db.Create(v).Error,"gorm insert")
 }

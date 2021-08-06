@@ -5,11 +5,17 @@ import(
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"todo/entities"
+	// "errors"
 )
 
 var index int
 var tasks map[int]*entities.Task = make(map[int]*entities.Task)
 
+
+
+type NewTaskTodo struct {
+	Task string `json:"task"`
+}
 
 
 type Inserter interface {
@@ -26,8 +32,13 @@ type Todo struct{
 	repo Repository
 }
 
+func NewTodo(db *gorm.DB) *Todo {
+	return &Todo{db:db}
+}
+
+
 func (todo Todo) Add(c *gin.Context){
-	var task entities.NewTaskTodo
+	var task entities.Task
 	if err := c.Bind(&task); err!= nil {
 		c.JSON(http.StatusBadRequest,nil)
 		return 
@@ -36,7 +47,7 @@ func (todo Todo) Add(c *gin.Context){
 	
 	if err := todo.repo.NewTask(&task).Error; err!= nil {
 		c.JSON(http.StatusInternalServerError,gin.H{
-			"error": err.Error(),
+			"error": "err.Error()",
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -45,57 +56,20 @@ func (todo Todo) Add(c *gin.Context){
 }
 
 
-// func (j JSONSerializer) Decode(r io.Reader, v interface{}) error {
-// 	return json.NewDecoder(r).Decode(v)
-// }
-// func (j JSONSerializer) Encode(w io.Writer, v interface{}) error {
-// 	return json.NewEncoder(w).Encode(v)
-// }
-
-
-// type App struct {
-// 	serialize Serializer
-// }
-   
-// type Serializer interface {
-// 	Decode(io.Reader, interface{}) error
-// 	Encode(io.Writer, interface{}) error
-// }
-
-
-// func NewApp(serialize Serializer) *App {
-// 	return &App{
-// 		serialize: serialize,
-// 	}
-// }
-
-type App struct {
-	// db *gorm.DB
-	db Inserter
+type GormInsert struct {
+	db *gorm.DB
 }
 
-type Insert *gorm.DB
-// type memDB map[int]*entities.Task
-// func (gdb Insert) Insert(interface{}) error {
-// 		return gdb.Create(v).Error
-// }
-
-// type nodb struct{}
-// func (db memDB) Insert(interface{}) error {
-// 	if cache,ok := v.(*entities.Task); ok {
-// 		tasks[index] = cache
-// 	}
-// 	return nil
+// func (insert GormInsert) Insert(v interface{}) error {
+// 	return errors.WithMessage(insert.db.Create(v).Error,"gorm insert")
 // }
 
 
-func NewApp(db *gorm.DB) *App {
-	return &App
-}
+
 
 func (todo *Todo) AddTask(c *gin.Context) {
 	
-	var task entities.NewTaskTodo
+	var task NewTaskTodo
 	// if err := app.serialize.Decode(c,&task)
 	if err := c.Bind(&task); err != nil {
 		c.JSON(http.StatusBadRequest,nil)
