@@ -1,27 +1,23 @@
 package todo
 import(
-	"io"
 	"net/http"
 	"strconv"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	
+	"todo/entities"
 )
 
 var index int
-var tasks map[int]*Task = make(map[int]*Task)
+var tasks map[int]*entities.Task = make(map[int]*entities.Task)
 
-type NewTaskTodo struct {
-	Task string `json:"task"`
-}
+
 
 type Inserter interface {
 	Insert(interface{}) error
 }
 
 type Repository interface {
-	NewTask(*Task) error
+	NewTask(*entities.Task) error
 }
 
 
@@ -31,7 +27,7 @@ type Todo struct{
 }
 
 func (todo Todo) Add(c *gin.Context){
-	var task NewTaskTodo
+	var task entities.NewTaskTodo
 	if err := c.Bind(&task); err!= nil {
 		c.JSON(http.StatusBadRequest,nil)
 		return 
@@ -79,37 +75,34 @@ type App struct {
 }
 
 type Insert *gorm.DB
-type memDB map[int]*Task
-func (gdb Insert) Insert(interface{}) error {
-		return gdb.Create(v).Error
-}
+// type memDB map[int]*entities.Task
+// func (gdb Insert) Insert(interface{}) error {
+// 		return gdb.Create(v).Error
+// }
 
-type nodb struct{}
-func (db memDB) Insert(interface{}) error {
-	if cache,ok := v.(*Task); ok {
-		tasks[index] = cache
-	}
-	return nil
-}
+// type nodb struct{}
+// func (db memDB) Insert(interface{}) error {
+// 	if cache,ok := v.(*entities.Task); ok {
+// 		tasks[index] = cache
+// 	}
+// 	return nil
+// }
 
-type Inserter interface {
-	Insert(interface{}) error
-}
 
 func NewApp(db *gorm.DB) *App {
-	return &app
+	return &App
 }
 
-func (app *App) AddTask(c *gin.Context) {
+func (todo *Todo) AddTask(c *gin.Context) {
 	
-	var task NewTaskTodo
+	var task entities.NewTaskTodo
 	// if err := app.serialize.Decode(c,&task)
 	if err := c.Bind(&task); err != nil {
 		c.JSON(http.StatusBadRequest,nil)
 		return
 	}
 	// New(task.Task)
-	app.db.Create(&Task{Title:task.Task,Doe:false})
+	todo.db.Create(&entities.Task{Title:task.Task,Done:false})
 }
 
 func ChangeDoneTask(c *gin.Context) {
@@ -134,12 +127,12 @@ func New(task string) {
 		index++
 	}()
 
-	tasks[index] = &Task{
+	tasks[index] = &entities.Task{
 		Title: task,
 		Done: false,
 	}
 }
 
-func List() map[int]*Task {
+func List() map[int]*entities.Task {
 	return tasks
 }
