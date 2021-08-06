@@ -24,6 +24,8 @@ type Inserter interface {
 
 type Repository interface {
 	NewTask(*entities.Task) error
+	TaskDone(uint) error
+	List() (entities.Task,error)
 }
 
 
@@ -69,30 +71,47 @@ type GormInsert struct {
 
 func (todo *Todo) AddTask(c *gin.Context) {
 	
-	var task NewTaskTodo
-	// if err := app.serialize.Decode(c,&task)
-	if err := c.Bind(&task); err != nil {
+	var task entities.Task
+	if err := c.Bind(&task); err!= nil {
 		c.JSON(http.StatusBadRequest,nil)
-		return
+		return 
 	}
-	// New(task.Task)
-	todo.db.Create(&entities.Task{Title:task.Task,Done:false})
+
+	
+	if err := todo.repo.NewTask(&task).Error; err!= nil {
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"error": "err.Error()",
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message":"ok",
+	})
 }
 
-func ChangeDoneTask(c *gin.Context) {
-	id := c.Param("id")
-	i, err := strconv.Atoi(id)
+func (todo Todo)ChangeDoneTask(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
-	tasks[i].Done = true
+	if err:= todo.repo.TaskDone(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"error":err.Error(),
+		})
+	}
 }
 
 
-func GetTask(c *gin.Context) {
-	c.JSON(http.StatusOK,List())
+func(todo Todo) GetTask(c *gin.Context) {
+	list,err := todo.repo.List()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"error":err.Error(),
+		})
+	}
+	c.JSON(http.StatusOK,list)
 
 }
 

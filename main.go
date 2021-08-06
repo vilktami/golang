@@ -48,8 +48,8 @@ func main() {
 	api.Use(authMiddleware)
 	// todoApp := todo.NewApp(serialize.NewJSONSerializer())
 	r.PUT("/todos",app.AddTask)
-	r.PUT("/todos/:id",todo.ChangeDoneTask)
-	r.GET("/todos",todo.GetTask)
+	r.PUT("/todos/:id",app.ChangeDoneTask)
+	r.GET("/todos",app.GetTask)
 	r.Run(":9090")
 
 }
